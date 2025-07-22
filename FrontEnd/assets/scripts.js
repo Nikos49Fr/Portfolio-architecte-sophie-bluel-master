@@ -1,19 +1,102 @@
+/**************************************************
+ * Appel à l'API pour récupérer les données
+ **************************************************/
+const reponseWorksAPI = await fetch("http://localhost:5678/api/works");
+const works = await reponseWorksAPI.json();
 
-const reponseAPI = await fetch("http://localhost:5678/api/works");
-const works = await reponseAPI.json();
+const reponseCategoriesAPI = await fetch("http://localhost:5678/api/categories");
+const categories = await reponseCategoriesAPI.json();
 
 
+// génération des boutons de filtres dynamiquement
+addButtonsFilter(listingCategories(works));
+
+// affichage de la gallery
 updateGallery(works);
 
+// ajout des Listeners sur les boutons filtres
+filteredButtonsListener();
+
+
+
+
+
+/*
+ * FONCTIONS
+ */
+
+/**************************************************
+ * Retourne un set avec toutes les catégories, y compris "Tous"
+ **************************************************/
+function listingCategories(works) {
+
+    const caterogiesList = new Set();
+    caterogiesList.add("Tous");
+
+    for (const work of works) {
+        caterogiesList.add(work.category.name);
+    }
+    return caterogiesList;
+}
+
+/**************************************************
+ * ajoute dynamiquement les bouton de filtres à la gallerie
+ **************************************************/
+function addButtonsFilter(categories) {
+    const filters = document.querySelector(".filters");
+
+    for (const category of categories) {
+            const button = document.createElement("button");
+            button.dataset.category = category;
+            
+            // class .active par défaut au bouton "Tous"
+            category === "Tous" ? button.classList.add("active"): "";
+            
+            button.innerText = category;
+            filters.appendChild(button);
+    }
+}
+
+/**************************************************
+ * affiche les travaux, filtrés ou non
+ **************************************************/
 function updateGallery(works) {
     const gallery = document.querySelector(".gallery");
+    
+    // vide la gallerie des éléments présents par défaut dans le HTML
     gallery.innerHTML = "";
-    for (let work of works) {
-        let figure = `<figure>
-				        <img src="${work.imageUrl}"
-                         alt="${work.title}">
-				        <figcaption>${work.title}</figcaption>
-			        </figure>`
+
+    for (const work of works) {
+        const figure = `<figure>
+                            <img src="${work.imageUrl}" alt="${work.title}">
+                            <figcaption>${work.title}</figcaption>
+                        </figure>`
         gallery.innerHTML += figure;
     }
 }
+
+/**************************************************
+ * EventListener sur les bouttons filtre
+ **************************************************/
+function filteredButtonsListener() {
+    const buttons = document.querySelectorAll(".filters button");
+    
+    for (const button of buttons) {
+        button.addEventListener("click", function() {
+            
+            const filteredWorks = works.filter(function (work) {
+                // retourne tous les éléments si la catégorie "Tous", sinon renvoi seulement les éléments dans la catégorie correspondant au bouton
+                return button.dataset.category === "Tous" ? true : work.category.name === button.dataset.category;
+            });
+            
+            // supprime la class "active" sur tous les bouttons
+            buttons.forEach(button => button.classList.remove("active"))
+            // la remet sur le bouton qui appelle l'eventListener
+            button.classList.add("active");
+
+            // met à jour la gallerie des travaux
+            updateGallery(filteredWorks);
+        });
+    }
+}
+
