@@ -7,7 +7,6 @@ const works = await reponseWorksAPI.json();
 const reponseCategoriesAPI = await fetch("http://localhost:5678/api/categories");
 const categories = await reponseCategoriesAPI.json();
 
-
 // génération des boutons de filtres dynamiquement
 addButtonsFilter(listingCategories(works));
 
@@ -17,7 +16,8 @@ updateGallery(works);
 // ajout des Listeners sur les boutons filtres
 filteredButtonsListener();
 
-
+// vérifie si l'utilisateur est authentifié
+isConnected();
 
 
 
@@ -91,7 +91,7 @@ function filteredButtonsListener() {
             
             // supprime la class "active" sur tous les bouttons
             buttons.forEach(button => button.classList.remove("active"))
-            // la remet sur le bouton qui appelle l'eventListener
+            // remet la class "active" sur le bouton qui appelle l'eventListener
             button.classList.add("active");
 
             // met à jour la gallerie des travaux
@@ -99,4 +99,30 @@ function filteredButtonsListener() {
         });
     }
 }
+
+
+/**************************************************
+ * Vérifie si l'utilisateur est connecté en vérifiant le localStorage
+ * ajoute l'eventListener pour se connecter ou se déconnecter
+ **************************************************/
+function isConnected() {
+    const userId = window.localStorage.getItem("userId");
+    const menuLogin = document.querySelector(".login");
+    
+    (userId) ? menuLogin.innerText = "Logout": ""; // user déjà connecté
+
+    menuLogin.addEventListener("click", () => {
+        if (userId) {
+            // l'user veut se déconnecter
+            window.localStorage.setItem("userId", []);
+            location.reload();
+        } else {
+            // l'user veut se connecter
+            document.location.assign("./pages/login.html");
+        }
+    });
+}
+
+
+
 

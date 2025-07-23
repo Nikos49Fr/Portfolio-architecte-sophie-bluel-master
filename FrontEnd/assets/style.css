@@ -190,8 +190,7 @@ input[type="submit"]{
 	cursor: pointer;
 }
 input[type="submit"]:hover {
-	background-color: #0E2F28;	
-	border: 1px solid #0E2F28;
+	background-color: #0E2F28;
 	color: white;
 }
 
@@ -249,4 +248,8 @@ a:hover {
 }
 #login a {
 	text-decoration: underline;
+}
+#errorMessage {
+	color: red;
+	text-align: center;
 }
