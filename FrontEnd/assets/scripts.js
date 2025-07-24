@@ -17,7 +17,7 @@ updateGallery(works);
 filteredButtonsListener();
 
 // vérifie si l'utilisateur est authentifié
-isConnected();
+isAdminConnected();
 
 
 
@@ -105,20 +105,31 @@ function filteredButtonsListener() {
  * Vérifie si l'utilisateur est connecté en vérifiant le localStorage
  * ajoute l'eventListener pour se connecter ou se déconnecter
  **************************************************/
-function isConnected() {
+function isAdminConnected() {
     const userId = window.localStorage.getItem("userId");
+    const token = window.localStorage.getItem("token");
     const menuLogin = document.querySelector(".login");
     
-    (userId) ? menuLogin.innerText = "Logout": ""; // user déjà connecté
+    if (userId && token) {
+        menuLogin.innerText = "Logout";
+        const ancre = document.querySelector("#portfolio h2");
+        const admin = document.createElement("span");
+        admin.innerHTML = `<i class="fa-regular fa-pen-to-square"></i> modifier`;
+        ancre.appendChild(admin);
+    } else {
+
+    }
+
 
     menuLogin.addEventListener("click", () => {
-        if (userId) {
+        if (userId && token) {
             // l'user veut se déconnecter
             window.localStorage.setItem("userId", []);
-            location.reload();
+            window.localStorage.setItem("token", []);
+            window.location.reload();
         } else {
             // l'user veut se connecter
-            document.location.assign("./pages/login.html");
+            window.location.assign("./pages/login.html");
         }
     });
 }

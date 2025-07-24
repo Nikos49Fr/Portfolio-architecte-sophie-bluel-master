@@ -253,3 +253,14 @@ a:hover {
 	color: red;
 	text-align: center;
 }
+
+h2 span {
+	font-family: 'Work Sans';
+	font-weight: 300;
+	font-size: 14px;
+	color: #000000;
+	position: relative;
+	left: 31px;
+	bottom: 5px;
+	cursor: pointer;
+}

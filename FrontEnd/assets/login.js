@@ -1,6 +1,7 @@
 
 const form = document.querySelector("#login form");
 
+// Ecoute du formulaire au clic sur le bouton submit
 form.addEventListener("submit", async (event) => {
     try {
         event.preventDefault();
@@ -19,10 +20,10 @@ form.addEventListener("submit", async (event) => {
         if (authentification.ok) { // authentification ok
             
             let authentificationOk = await authentification.json();
-            // on garde sur le localStorage l'userId
+            // on garde sur le localStorage l'userId et le token
             memorizeUser(authentificationOk);
             // on charge la page principale
-            document.location.assign("./../index.html");
+            window.location.assign("./../index.html");
 
         } else { // authentification KO
             
@@ -40,7 +41,7 @@ form.addEventListener("submit", async (event) => {
  */
 
 /**************************************************
- * Vérifie le format d'email saisir et que le mot de passe ne soit pas vide
+ * Vérifie le format d'email saisi et que le mot de passe ne soit pas vide
  **************************************************/
 function checkEmail(email) {
     let regex = new RegExp("[a-z0-9._-]+@[a-z0-9._-]+\.[a-z0-9._-]+");
@@ -71,7 +72,6 @@ function displayErrorMessage(message) {
 
 /**************************************************
  * Requête d'authentification
- * return true si authentification ok, sinon false
  **************************************************/
 async function requestAuth(email, password) {
     // prépare le body pour la requête d'authentification
@@ -104,8 +104,9 @@ function AuthErrorHandle(statusCode) {
 }
 
 /**************************************************
- * Utilise le localStorage pour mémoriser l'userId qui est connecté
+ * Utilise le localStorage pour mémoriser l'userId et le token
  **************************************************/
 function memorizeUser(authentificationOk) {
     window.localStorage.setItem("userId", authentificationOk.userId);
+    window.localStorage.setItem("token", authentificationOk.token);
 }
