@@ -75,14 +75,13 @@ h1 > span {
 	font-family: 'Work Sans';
 	font-size:10px;
 	letter-spacing: 0.1em;
-;
 }
 
 h2{
 	font-family: 'Syne';
 	font-weight: 700;
 	font-size: 30px;
-	color: #1D6154
+	color: #1D6154;
 }
 nav ul {
 	display: flex;
@@ -205,12 +204,12 @@ footer nav ul {
 	display: flex;
 	justify-content: center;
 }
-.filters button {
+.btn {
 	font-family: 'Syne';
 	font-weight: 700;
 	font-size: 1rem;
-	color: #1D6154;
-	background-color: #FFFFFF;
+	color: white;
+	background-color: #1D6154;
 	margin : 20px 5px 50px;
 	padding: 10px;
 	min-width: 100px;
@@ -220,12 +219,17 @@ footer nav ul {
 	border-radius: 60px;
 	cursor: pointer;
 }
-.filters button:hover {
+.btn:hover,
+.filters .btn:hover {
 	background-color: #0E2F28;	
 	border: 1px solid #0E2F28;
 	color: white;
 }
-.filters .active {
+.filters .btn-filters {
+	color: #1D6154;
+	background-color: #FFFFFF;
+}
+.filters .active-btn {
 	color: white;
 	border: 1px solid #1D6154;
 	background-color: #1D6154;
@@ -254,13 +258,108 @@ a:hover {
 	text-align: center;
 }
 
-h2 span {
+/* modal */
+.js-modal {
 	font-family: 'Work Sans';
 	font-weight: 300;
 	font-size: 14px;
 	color: #000000;
+	background-color: unset;
+	border: unset;
 	position: relative;
-	left: 31px;
 	bottom: 5px;
+}
+.js-modal i {
+	padding-right: 10px;
+	padding-left: 25px;
+}
+.js-modal:hover {
+	color: #B1663C;
+	font-weight: 700;
 	cursor: pointer;
+}
+
+/* modal */
+.modal {
+    display: none;
+    align-items: center;
+	justify-content: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+.modal_wrapper {
+	display: none;
+	overflow: auto;
+	position: relative;
+	max-width: 630px;
+    max-height: 700px;
+	flex-wrap: wrap;
+    justify-content: center;
+    background-color: white;
+    border-radius: 10px;
+    z-index: 1;
+}
+.activeWrapper {
+    display: flex !important;
+}
+
+.js-modal-close {
+	position: absolute;
+	top: 26px;
+	right: 30px;
+	cursor: pointer;
+}
+.js-modal-previous {
+	position: absolute;
+	top: 26px;
+	left: 30px;
+	cursor: pointer;
+}
+.js-modal-add {
+	min-width: 237px;
+	margin: 38px auto 45px;
+}
+
+h3 {
+	font-family: 'Work Sans';
+	font-weight: 400;
+	font-size: 26px;
+	color: black;
+	padding-top: 60px;
+	padding-bottom: 46px;
+}
+.galleryModal {
+	width: 67%;
+	margin: 0 16.5%;
+	/*padding: 0 16.5% 67.3px;*/
+	padding-bottom: 67.3px;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+	grid-column-gap: 9px;
+	grid-row-gap: 29px;
+	border-bottom: 1px solid #B3B3B3;
+}
+.galleryModal figure {
+	position: relative;
+}
+.trash {
+	position: absolute;
+	width: 17px;
+	height: 17px;
+	background-color: black;
+	color: white;
+	top: 6px;
+	right: 5px;
+	border-radius: 2px;
+	display: flex;
+	justify-content: center;
+    align-items: center;
+	padding-top: 0px;
+	cursor: pointer;
+}
+.trash i {
+	line-height: 0;
 }
