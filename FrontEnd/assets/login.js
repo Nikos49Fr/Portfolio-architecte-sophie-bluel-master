@@ -54,7 +54,6 @@ function checkPassword(password) {
         throw new Error("Veuillez saisir le mot de passe.");
     }
 }
-
 /**************************************************
  * Affiche un message d'erreur sur le formulaire si :
  * - Erreur de saisie dans l'un des champs
@@ -69,7 +68,6 @@ function displayErrorMessage(message) {
     }
     spanErrorMessage.innerText = message;
 }
-
 /**************************************************
  * Requête d'authentification
  **************************************************/
@@ -85,7 +83,6 @@ async function requestAuth(email, password) {
     });
     return responseAPI;
 }
-
 /**************************************************
  * Récupère le statut de la requête d'authentification
  * et gère les messages d'erreur suivant le cas
@@ -102,7 +99,6 @@ function AuthErrorHandle(statusCode) {
             throw new Error("Erreur d'authentification inconnue."); // erreur inconnue
     }
 }
-
 /**************************************************
  * Utilise le localStorage pour mémoriser l'userId et le token
  **************************************************/

@@ -256,6 +256,8 @@ a:hover {
 #errorMessage {
 	color: red;
 	text-align: center;
+	width: 100%;
+	padding-bottom: 20px;
 }
 
 /* modal */

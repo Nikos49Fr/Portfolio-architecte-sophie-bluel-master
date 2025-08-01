@@ -43,7 +43,7 @@ function addFilterButtons(categories) {
             button.dataset.category = category;
             
             // class .active par défaut au bouton "Tous"
-            category === "Tous" ? button.classList.add("active-btn"): "";
+            if (category === "Tous") button.classList.add("active-btn");
             
             button.innerText = category;
             filters.appendChild(button);
@@ -55,14 +55,14 @@ function addFilterButtons(categories) {
  *
  * @param {Array} works - Liste des travaux à afficher
  **************************************************/
-function updateGallery(works) {
+function showGallery(works) {
     const gallery = document.querySelector(".gallery");
     
     // vide la gallerie des éléments présents par défaut dans le HTML
     gallery.innerHTML = "";
 
     for (const work of works) {
-        const figure = `<figure>
+        const figure = `<figure data-id="${work.id}">
                             <img src="${work.imageUrl}" alt="${work.title}">
                             <figcaption>${work.title}</figcaption>
                         </figure>`
@@ -88,7 +88,7 @@ function filteredButtonsListener() {
             button.classList.add("active-btn");
 
             // met à jour la gallerie des travaux
-            updateGallery(filteredWorks);
+            showGallery(filteredWorks);
         });
     }
 }
@@ -116,6 +116,8 @@ function ShowAdminFunctions() {
                             <i class="fa-regular fa-pen-to-square"></i>modifier
                             </button>`;
     element.innerHTML += spanModifyBtn;
+    // les filtres sont enlevés pour être conforme à la maquette
+    document.querySelector(".filters").innerHTML = "";
 }
 /**************************************************
  * Ecoute si l'admin veut se déconnecter
@@ -149,7 +151,7 @@ activeWrapper.classList.add("activeWrapper");
 /**************************************************
  * initialisation du EventListener pour la modale
  **************************************************/
-function initAddEventListenerModal() {
+function initModalListener() {
     document.querySelector(".js-modal").addEventListener("click", openModal);
 }
 /**************************************************
@@ -161,9 +163,10 @@ const openModal = function (event) {
     modal.style.display = "flex";
     modal.removeAttribute("aria-hidden");
     modal.setAttribute("aria-modal", "true");
-    showModalGallery();
+    showModalGallery(works);
     modal.addEventListener("click", closeModal);
     activeWrapper.querySelector(".js-modal-close").addEventListener("click", closeModal);
+    activeWrapper.querySelector(".js-modal-btnAdd").addEventListener("click", switchWrapper);
 }
 /**************************************************
  * Fermeture de la modale
@@ -193,20 +196,11 @@ function switchWrapper(wrapper) {
  * Récupère le filtrage actif
  * et affichage les travaux dans la gallerie
  **************************************************/
-function showModalGallery() {
-    const filtersbuttons = document.querySelectorAll(".filters button");
-    let category = "Tous"; // par défaut pour afficher tous les travaux
-    for (const button of filtersbuttons) {
-        if (button.classList.contains("active-btn")) category = button.dataset.category;
-    }
-    const filteredWorks = works.filter(function (work) {
-        return category === "Tous" ? true : work.category.name === category;        
-    });
-    
+function showModalGallery(works) {
     const gallery = document.querySelector(".galleryModal");
     gallery.innerHTML = "";
-    for (const work of filteredWorks) {
-        const figure = `<figure>
+    for (const work of works) {
+        const figure = `<figure data-id="${work.id}">
                             <img src="${work.imageUrl}" alt="${work.title}">
                             <span class="trash" data-id="${work.id}"><i class="fa-solid fa-xs fa-trash-can"></i></span>
                         </figure>`
@@ -221,7 +215,7 @@ function addListenerToRemove() {
     const worksList = modal.querySelectorAll(".galleryModal figure .trash");
     for (const removeBtn of worksList) {
         removeBtn.addEventListener("click", function () {
-            removeWork(removeBtn.dataset.id);
+            removeWork(parseInt(removeBtn.dataset.id));
         });
     }
 }
@@ -229,10 +223,56 @@ function addListenerToRemove() {
  * Supprime une image de la BDD
  **************************************************/
 async function removeWork(workId) {
-    console.log("Ok pour supprimer l'image " + workId);
+    try {
+        // requête de suppression
+        let responseAPI = await fetch(`http://localhost:5678/api/works/${workId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}`}
+        });
+        if (responseAPI.ok) { // élément supprimé
+            document.querySelector(`#portfolio figure[data-id="${workId}"]`).remove();
+            document.querySelector(`.modal figure[data-id="${workId}"]`).remove();
+        } else { // erreur
+            /*
+            Actuellement, l'API renvois toujours ok, et le status 201, même si l'élément à supprimer n'existe pas.
+            La gestion des codes erreurs est maintenues en vue d'une éventuelle évolution.
+            */
+            removeErrorHandle(responseAPI.status);
+        }
+
+    } catch(error) {
+        displayErrorMessage(error.message);
+    }
     
-    
-    closeModal; // code à revoir pour aussi retirer les Listeners
+}
+/**************************************************
+ * Récupère le statut de la requête de suppression
+ * et gère les messages d'erreur suivant le cas
+ **************************************************/
+function removeErrorHandle(statusCode) {
+    switch(statusCode) {
+        case 204:
+            throw new Error("Ressource supprimée."); // ce cas ne devrait pas se produire
+        case 401:
+            throw new Error("Vous n'êtes pas autorisé à supprimer cette ressource.");
+        case 404:
+            throw new Error("La ressource n'existe pas.");
+        case 500:
+        default:
+            throw new Error("Erreur inconnue.");
+    }
+}
+/**************************************************
+ * Affiche un message d'erreur si la suppression echoue
+ **************************************************/
+function displayErrorMessage(message) {
+    let spanErrorMessage = document.getElementById("errorMessage");
+    if (!spanErrorMessage) {
+        spanErrorMessage = document.createElement("div");
+        spanErrorMessage.id = "errorMessage";
+        document.querySelector(".activeWrapper").insertBefore(spanErrorMessage, document.querySelector(".galleryModal"));
+    }
+    spanErrorMessage.innerText = message;
 }
 /**************************************************
  * FIN DES FONCTIONS
@@ -243,12 +283,6 @@ async function removeWork(workId) {
  * Début du Script
  **************************************************/
 
-// génération des boutons de filtres dynamiquement
-addFilterButtons(listingCategories(works));
-// affichage de la gallery
-updateGallery(works);
-// ajout des Listeners sur les boutons filtres
-filteredButtonsListener();
 
 // si l'admin est connecté
 if (isAdminConnected()) {
@@ -257,8 +291,15 @@ if (isAdminConnected()) {
     // écoute les demandes de déconnexion
     listenLogOut();
     // écoute l'appel à la modale de modification 
-    initAddEventListenerModal();
+    initModalListener();
 } else {
+    // génération des boutons de filtres dynamiquement
+    addFilterButtons(listingCategories(works));
+    // ajout des Listeners sur les boutons filtres
+    filteredButtonsListener();
     // écoute les demandes de connexion
     listenLogIn();
 }
+
+// affichage de la gallery
+showGallery(works);
