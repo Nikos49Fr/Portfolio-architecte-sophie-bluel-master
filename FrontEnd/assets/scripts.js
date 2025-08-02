@@ -118,6 +118,8 @@ function ShowAdminFunctions() {
     element.innerHTML += spanModifyBtn;
     // les filtres sont enlevés pour être conforme à la maquette
     document.querySelector(".filters").innerHTML = "";
+    // ajoute la bannière
+    document.getElementById('edition').classList.add('display');
 }
 /**************************************************
  * Ecoute si l'admin veut se déconnecter
@@ -143,10 +145,16 @@ function listenLogIn() {
 /**************************************************
  * GESTION DES MODALES
  **************************************************/
-let modal = null;
-const wrappers = document.querySelectorAll(".modal_wrapper");
-let activeWrapper = wrappers[0];
-activeWrapper.classList.add("activeWrapper");
+/*
+let activeWrapper = document.getElementById("wrapper-1");
+activeWrapper.classList.add("display");
+*/
+const wrapper1 = document.getElementById("wrapper-1");
+const wrapper2 = document.getElementById("wrapper-2");
+const wrapper1Close = wrapper1.querySelector(".js-modal-close");
+const forward = wrapper1.querySelector(".js-modal-forward");
+const wrapper2Close = wrapper2.querySelector(".js-modal-close");
+const previous = wrapper2.querySelector(".js-modal-previous");
 
 /**************************************************
  * initialisation du EventListener pour la modale
@@ -159,42 +167,65 @@ function initModalListener() {
  **************************************************/
 const openModal = function (event) {
     event.preventDefault();
-    modal = document.getElementById("modal");
-    modal.style.display = "flex";
+    const modal = document.getElementById("modal");
+    modal.classList.add("display");
     modal.removeAttribute("aria-hidden");
     modal.setAttribute("aria-modal", "true");
-    showModalGallery(works);
     modal.addEventListener("click", closeModal);
-    activeWrapper.querySelector(".js-modal-close").addEventListener("click", closeModal);
-    activeWrapper.querySelector(".js-modal-btnAdd").addEventListener("click", switchWrapper);
+    // on affiche d'abord le wrapper "Galerie photo"
+    displayWrapperRemove();
 }
 /**************************************************
  * Fermeture de la modale
  **************************************************/
 const closeModal = function (event) {
-    if (modal === null) return;
-    const jsBtnClose = activeWrapper.querySelector(".js-modal-close");
-    if (event.target === modal || event.target === jsBtnClose) {
+    if (event.target === modal || event.target === wrapper1Close || event.target === wrapper2Close) {
         modal.setAttribute("aria-hidden", "true");
         modal.removeAttribute("aria-modal");
         modal.removeEventListener("click", closeModal);
-        jsBtnClose.removeEventListener("click", closeModal);
-        modal.style.display = "none";
-        modal = null;
+        modal.classList.remove("display");
+        if (wrapper1.classList.contains("display")) {
+            wrapper1Close.removeEventListener("click", closeModal);
+            forward.removeEventListener("click", displayWrapperAdd);
+            document.querySelector(".galleryModal").innerHTML = "";
+            wrapper1.classList.remove("display");
+        }
+        if (wrapper2.classList.contains("display")) {
+            wrapper2Close.removeEventListener("click", closeModal);
+            previous.removeEventListener("click", displayWrapperRemove);
+            wrapper2.classList.remove("display");
+        }
     }
 }
 /**************************************************
- * Sélection du wrapper à afficher
+ * Affichage du Wrapper "Galerie photo"
  **************************************************/
-function switchWrapper(wrapper) {
-    // TODO => revoir la logique
-    if (wrapper === 0) { wrapper = 1; } else { wrapper = 0; }
-    for (let wrapperInList of wrappers) wrapperInList.classList.remove("activeWrapper");
-    wrappers[wrapper].classList.add("activeWrapper");
+function displayWrapperRemove() {    
+    wrapper2Close.removeEventListener("click", closeModal);
+    previous.removeEventListener("click", displayWrapperRemove);
+    wrapper2.classList.remove("display");
+    
+    wrapper1Close.addEventListener("click", closeModal);
+    forward.addEventListener("click", displayWrapperAdd);
+    wrapper1.classList.add("display");
+    
+    showModalGallery(works);
 }
 /**************************************************
- * Récupère le filtrage actif
- * et affichage les travaux dans la gallerie
+ * Affichage du Wrapper "Ajout  photo"
+ **************************************************/
+function displayWrapperAdd() {
+    wrapper1Close.removeEventListener("click", closeModal);
+    forward.removeEventListener("click", displayWrapperAdd);
+    document.querySelector(".galleryModal").innerHTML = "";
+    wrapper1.classList.remove("display");
+    
+    wrapper2Close.addEventListener("click", closeModal);
+    previous.addEventListener("click", displayWrapperRemove);
+    wrapper2.classList.add("display");
+}
+/**************************************************
+ * Affichage des travaux dans la modale
  **************************************************/
 function showModalGallery(works) {
     const gallery = document.querySelector(".galleryModal");
@@ -230,12 +261,16 @@ async function removeWork(workId) {
             headers: { "Authorization": `Bearer ${localStorage.getItem("token")}`}
         });
         if (responseAPI.ok) { // élément supprimé
+            // pour un affichage en direct sans rafrachir derrière la modale
             document.querySelector(`#portfolio figure[data-id="${workId}"]`).remove();
-            document.querySelector(`.modal figure[data-id="${workId}"]`).remove();
+            // on enlève l'élément supprimé aussi de l'objet "works"
+            works.splice(works.findIndex((work) => work.id === workId), 1);
+            showModalGallery(works); // update de l'affichage de la modale
+
         } else { // erreur
             /*
-            Actuellement, l'API renvois toujours ok, et le status 201, même si l'élément à supprimer n'existe pas.
-            La gestion des codes erreurs est maintenues en vue d'une éventuelle évolution.
+            Actuellement, l'API renvois toujours ok, et le status 204, même si l'élément à supprimer n'existe pas.
+            La gestion des codes erreurs est maintenue en vue d'une éventuelle évolution.
             */
             removeErrorHandle(responseAPI.status);
         }
@@ -266,13 +301,8 @@ function removeErrorHandle(statusCode) {
  * Affiche un message d'erreur si la suppression echoue
  **************************************************/
 function displayErrorMessage(message) {
-    let spanErrorMessage = document.getElementById("errorMessage");
-    if (!spanErrorMessage) {
-        spanErrorMessage = document.createElement("div");
-        spanErrorMessage.id = "errorMessage";
-        document.querySelector(".activeWrapper").insertBefore(spanErrorMessage, document.querySelector(".galleryModal"));
-    }
-    spanErrorMessage.innerText = message;
+    const ErrorMessage = document.getElementById("errorMessage");
+    ErrorMessage.innerText = message;
 }
 /**************************************************
  * FIN DES FONCTIONS

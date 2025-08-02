@@ -13,6 +13,10 @@
 	<script type="module" src="./assets/scripts.js" defer></script>
 </head>
 <body>
+<div id="edition">
+	<i class="fa-regular fa-pen-to-square"></i>
+	<span>Mode édition</span>
+</div>
 <header>
 	<h1>Sophie Bluel <span>Architecte d'intérieur</span></h1>
 	<nav>
@@ -66,14 +70,17 @@
 
 <aside id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="false">
     
-    <div class="modal_wrapper">
+    <article class="modal_wrapper display" id="wrapper-1">
         <i class="fa-solid fa-lg fa-xmark js-modal-close"></i>
         <h3>Galerie photo</h3>
         <div class="gallery galleryModal"></div>
-        <button id="titlemodal" class="btn js-modal-btnAdd">Ajouter une photo</button>
-    </div>
+		
+		<div id="errorMessage"></div>
+        
+		<button id="titlemodal" class="btn js-modal-forward">Ajouter une photo</button>
+    </article>
 
-    <div class="modal_wrapper">
+    <article class="modal_wrapper" id="wrapper-2">
         <i class="fa-solid fa-arrow-left fa-lg js-modal-previous"></i>
         <i class="fa-solid fa-lg fa-xmark js-modal-close"></i>
         <h3>Ajout photo</h3>
@@ -90,10 +97,13 @@
             <input type="text" id="titlePhoto" name="titlePhoto">
             <label for="categoryPhoto">Catégorie</label>
             <input type="select" id="categoryPhoto" name="categoryPhoto">
-            <input type="submit" value="Valider" class="btn">
+			
+			<div id="errorMessage"></div>
+            
+			<input type="submit" value="Valider" class="btn">
         
         </form>
-    </div>
+    </article>
 
 </aside>
 
