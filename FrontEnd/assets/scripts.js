@@ -119,7 +119,7 @@ function ShowAdminFunctions() {
     // les filtres sont enlevés pour être conforme à la maquette
     document.querySelector(".filters").innerHTML = "";
     // ajoute la bannière
-    document.getElementById('edition').classList.add('display');
+    document.getElementById('admin-banniere').classList.add('js-display');
 }
 /**************************************************
  * Ecoute si l'admin veut se déconnecter
@@ -168,7 +168,7 @@ function initModalListener() {
 const openModal = function (event) {
     event.preventDefault();
     const modal = document.getElementById("modal");
-    modal.classList.add("display");
+    modal.classList.add("js-display");
     modal.removeAttribute("aria-hidden");
     modal.setAttribute("aria-modal", "true");
     modal.addEventListener("click", closeModal);
@@ -183,17 +183,17 @@ const closeModal = function (event) {
         modal.setAttribute("aria-hidden", "true");
         modal.removeAttribute("aria-modal");
         modal.removeEventListener("click", closeModal);
-        modal.classList.remove("display");
-        if (wrapper1.classList.contains("display")) {
+        modal.classList.remove("js-display");
+        if (wrapper1.classList.contains("js-display")) {
             wrapper1Close.removeEventListener("click", closeModal);
             forward.removeEventListener("click", displayWrapperAdd);
             document.querySelector(".galleryModal").innerHTML = "";
-            wrapper1.classList.remove("display");
+            wrapper1.classList.remove("js-display");
         }
-        if (wrapper2.classList.contains("display")) {
+        if (wrapper2.classList.contains("js-display")) {
             wrapper2Close.removeEventListener("click", closeModal);
             previous.removeEventListener("click", displayWrapperRemove);
-            wrapper2.classList.remove("display");
+            wrapper2.classList.remove("js-display");
         }
     }
 }
@@ -203,11 +203,11 @@ const closeModal = function (event) {
 function displayWrapperRemove() {    
     wrapper2Close.removeEventListener("click", closeModal);
     previous.removeEventListener("click", displayWrapperRemove);
-    wrapper2.classList.remove("display");
+    wrapper2.classList.remove("js-display");
     
     wrapper1Close.addEventListener("click", closeModal);
     forward.addEventListener("click", displayWrapperAdd);
-    wrapper1.classList.add("display");
+    wrapper1.classList.add("js-display");
     
     showModalGallery(works);
 }
@@ -218,11 +218,11 @@ function displayWrapperAdd() {
     wrapper1Close.removeEventListener("click", closeModal);
     forward.removeEventListener("click", displayWrapperAdd);
     document.querySelector(".galleryModal").innerHTML = "";
-    wrapper1.classList.remove("display");
+    wrapper1.classList.remove("js-display");
     
     wrapper2Close.addEventListener("click", closeModal);
     previous.addEventListener("click", displayWrapperRemove);
-    wrapper2.classList.add("display");
+    wrapper2.classList.add("js-display");
 }
 /**************************************************
  * Affichage des travaux dans la modale

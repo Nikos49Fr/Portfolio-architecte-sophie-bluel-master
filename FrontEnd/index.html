@@ -13,7 +13,7 @@
 	<script type="module" src="./assets/scripts.js" defer></script>
 </head>
 <body>
-<div id="edition">
+<div id="admin-banniere">
 	<i class="fa-regular fa-pen-to-square"></i>
 	<span>Mode édition</span>
 </div>
@@ -73,9 +73,9 @@
     <article class="modal_wrapper display" id="wrapper-1">
         <i class="fa-solid fa-lg fa-xmark js-modal-close"></i>
         <h3>Galerie photo</h3>
-        <div class="gallery galleryModal"></div>
-		
 		<div id="errorMessage"></div>
+
+        <div class="gallery galleryModal"></div>
         
 		<button id="titlemodal" class="btn js-modal-forward">Ajouter une photo</button>
     </article>
@@ -85,22 +85,28 @@
         <i class="fa-solid fa-lg fa-xmark js-modal-close"></i>
         <h3>Ajout photo</h3>
         
-        <form class="modal-form_add">
+		<div id="errorMessage"></div>
+
+        <form class="modal-form_add" id="edition">
         
-            <form class="modal-form_add-image">
+            <div class="modal-form_add-image">
                 <i class="fa-regular fa-image fa-2xl"></i>
-                <input type="file" id="photo" name="photo" accept="image/png, image/jpeg" value="+ Ajouter photo">
+                <button id="importFile" class="btn js-modal-importFile">+ Ajouter photo</button>
                 <span>jpg, png : 4mo max</span>
-            </form>
+			</div>
         
             <label for="titlePhoto">Titre</label>
             <input type="text" id="titlePhoto" name="titlePhoto">
             <label for="categoryPhoto">Catégorie</label>
-            <input type="select" id="categoryPhoto" name="categoryPhoto">
+			<select name="categoryPhoto" id="categoryPhoto">
+				<option value="cat1">Cat 1</option>
+				<option value="cat2">Cat 2</option>
+				<option value="cat3">Cat 3</option>
+			</select>
+
+			<span class="line"></span>
 			
-			<div id="errorMessage"></div>
-            
-			<input type="submit" value="Valider" class="btn">
+			<input type="submit" value="Valider" class="btn inactive" id="submitNewWork">
         
         </form>
     </article>

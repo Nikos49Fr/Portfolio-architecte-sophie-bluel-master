@@ -90,12 +90,12 @@ nav ul {
 
 }
 nav li {
-	padding: 0 10px;
+	padding: 0 22px;
 	font-size: 1.2em;
 }
 
 li:hover {
-	color: #B1663C;
+	color: black;
 	font-weight: 700;
 	cursor: pointer;
 }
@@ -161,20 +161,37 @@ li:hover {
 }
 
 #contact input,
-#login input {
+#login input,
+#edition input,
+#edition select {
 	height: 50px;
-	font-size: 1.2em;
+	font: 400 14px 'Work Sans';
+	color: #444444;
 	border: none;
 	box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.09);
 	padding-left: 15px;
 }
 #contact label,
-#login label {
+#login label,
+#edition label {
+	color: #3D3D3D;
 	margin: 2em 0 1em 0;
+	font-weight: 500;
 }
 #contact textarea {
 	border: none;
 	box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.09);
+	font: 400 14px 'Work Sans';
+	color: #444444;
+	padding-left: 15px;
+}
+
+#contact input[type="submit"],
+#login input[type="submit"],
+#edition input[type="submit"] {
+	height: 36px;
+	font: 700 14px 'Syne';
+	color: white;
 }
 
 input[type="submit"]{
@@ -187,6 +204,7 @@ input[type="submit"]{
 	text-align: center;
 	border-radius: 60px ;
 	cursor: pointer;
+	
 }
 input[type="submit"]:hover {
 	background-color: #0E2F28;
@@ -207,17 +225,17 @@ footer nav ul {
 .btn {
 	font-family: 'Syne';
 	font-weight: 700;
-	font-size: 1rem;
+	font-size: 1em;
 	color: white;
 	background-color: #1D6154;
 	margin : 20px 5px 50px;
-	padding: 10px;
 	min-width: 100px;
 	text-align: center;
 	box-sizing: border-box;
 	border: 1px solid #1D6154;
 	border-radius: 60px;
 	cursor: pointer;
+	height: 36px;
 }
 .btn:hover,
 .filters .btn:hover {
@@ -263,7 +281,7 @@ a:hover {
 }
 
 /* bannière admin */
-#edition {
+#admin-banniere {
 	display: none;
     justify-content: center;
     align-items: center;
@@ -277,15 +295,15 @@ a:hover {
 	background-color: black;
 	color: white;
 }
-#edition i {
+#admin-banniere i {
 	padding-right: 11px;
 }
-#edition.display + header { /* quand la bannière est visible */
+#admin-banniere.js-display + header { /* quand la bannière est visible */
     margin-top: 97px;
 }
 
-/* class pour gérer l'affichage ou non des éléments */
-.display {
+/* class pour gérer l'affichage ou non des éléments en JS */
+.js-display {
     display: flex !important;
 }
 
@@ -305,7 +323,7 @@ a:hover {
 	padding-left: 25px;
 }
 .js-modal:hover {
-	color: #B1663C;
+	color: black;
 	font-weight: 700;
 	cursor: pointer;
 }
@@ -326,10 +344,12 @@ a:hover {
 	display: none;
 	overflow: auto;
 	position: relative;
+	width: calc(100% - 210px);
 	max-width: 630px;
-    max-height: 700px;
-	flex-wrap: wrap;
+    max-height: 720px;
+	flex-direction: column;
     justify-content: center;
+	align-items: center;
     background-color: white;
     border-radius: 10px;
     z-index: 1;
@@ -347,7 +367,7 @@ a:hover {
 	left: 30px;
 	cursor: pointer;
 }
-.js-modal-add {
+.js-modal-forward {
 	min-width: 237px;
 	margin: 38px auto 45px;
 }
@@ -358,12 +378,11 @@ h3 {
 	font-size: 26px;
 	color: black;
 	padding-top: 60px;
-	padding-bottom: 46px;
+	padding-bottom: 26px;
 }
 .galleryModal {
-	width: 67%;
-	margin: 0 16.5%;
-	/*padding: 0 16.5% 67.3px;*/
+	max-width: 420px;
+	width: 66.7%;
 	padding-bottom: 67.3px;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 	grid-column-gap: 9px;
@@ -390,4 +409,53 @@ h3 {
 }
 .trash i {
 	line-height: 0;
+}
+
+/* wrapper pour ajouter une photo */
+.modal-form_add {
+	display: flex;
+	flex-direction: column;
+	width: 66.7%;
+}
+.modal-form_add-image {
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	background-color: #E8F1F6;
+	border-radius: 3px;
+	align-items: center;
+	padding: 20px;
+	max-height: 169px;
+}
+.modal-form_add-image i {
+	font-size: 4rem;
+	line-height: normal;
+	color: #B9C5CC;
+}
+.modal-form_add-image button {
+	background-color: #CBD6DC;
+	color: #306685;
+	font: 500 14px 'Work Sans';
+	border: 1px solid #CBD6DC;
+	min-width: 173px;
+	margin: 10px 0 7px;
+}
+.modal-form_add-image span {
+	font: 400 10px 'Work Sans';
+	color: #444444;
+}
+select {
+	margin-bottom: 47px;
+}
+.line {
+	border-top: 1px solid #B3B3B3;
+}
+#submitNewWork {
+	margin-top: 32px;
+	margin-bottom: 55px;
+	min-width: 237px;
+}
+#submitNewWork.inactive {
+	background-color: #A7A7A7;
+	border: 1px solid #A7A7A7;
 }
