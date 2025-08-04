@@ -84,27 +84,25 @@
         <i class="fa-solid fa-arrow-left fa-lg js-modal-previous"></i>
         <i class="fa-solid fa-lg fa-xmark js-modal-close"></i>
         <h3>Ajout photo</h3>
-        
-		<div id="errorMessage"></div>
 
         <form class="modal-form_add" id="edition">
         
-            <div class="modal-form_add-image">
-                <i class="fa-regular fa-image fa-2xl"></i>
-                <button id="importFile" class="btn js-modal-importFile">+ Ajouter photo</button>
-                <span>jpg, png : 4mo max</span>
-			</div>
+            <label for="photoToAdd" class="photoToAdd">
+				<div class="modal-form_add-image">
+					<i class="fa-regular fa-image fa-2xl"></i>
+					<div id="importFile" class="btn js-modal-importFile">+ Ajouter photo</div>
+					<span>jpg, png : 4mo max</span>
+				</div>
+				<input type="file" id="photoToAdd" name="photoToAdd" accept="image/png, image/jpeg" />
+			</label>
         
             <label for="titlePhoto">Titre</label>
             <input type="text" id="titlePhoto" name="titlePhoto">
-            <label for="categoryPhoto">Catégorie</label>
-			<select name="categoryPhoto" id="categoryPhoto">
-				<option value="cat1">Cat 1</option>
-				<option value="cat2">Cat 2</option>
-				<option value="cat3">Cat 3</option>
-			</select>
+            <label for="categoriesSelect">Catégorie</label>
+			<select name="categoriesSelect" id="categoriesSelect"></select>
 
 			<span class="line"></span>
+			<div id="errorMessage"></div>
 			
 			<input type="submit" value="Valider" class="btn inactive" id="submitNewWork">
         

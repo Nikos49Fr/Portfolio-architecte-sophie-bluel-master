@@ -6,13 +6,12 @@ form.addEventListener("submit", async (event) => {
     try {
         event.preventDefault();
 
-        displayErrorMessage("");
+        displayErrorMessage(""); // pour effacer le message d'erreur
 
         const email = document.getElementById("email").value;
         checkEmail(email);
         const password = document.getElementById("password").value;
         checkPassword(password)
-
 
         // Demande d'authentification
         const authentification = await requestAuth(email, password);

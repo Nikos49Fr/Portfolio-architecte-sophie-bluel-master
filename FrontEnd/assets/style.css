@@ -424,26 +424,39 @@ h3 {
 	background-color: #E8F1F6;
 	border-radius: 3px;
 	align-items: center;
-	padding: 20px;
 	max-height: 169px;
+	height: 169px;
+	overflow: hidden;
+}
+.imagePreview {
+	object-fit: contain;
+	height: auto;
+	max-height: 100%;
 }
 .modal-form_add-image i {
 	font-size: 4rem;
 	line-height: normal;
 	color: #B9C5CC;
+	padding-top: 20px;
 }
-.modal-form_add-image button {
+.modal-form_add-image .btn {
 	background-color: #CBD6DC;
 	color: #306685;
 	font: 500 14px 'Work Sans';
 	border: 1px solid #CBD6DC;
 	min-width: 173px;
 	margin: 10px 0 7px;
+	padding: 10px 0;
 }
 .modal-form_add-image span {
 	font: 400 10px 'Work Sans';
 	color: #444444;
+	padding-bottom: 20px;
 }
+input[type="file"] {
+	display: none;
+}
+
 select {
 	margin-bottom: 47px;
 }
@@ -451,11 +464,12 @@ select {
 	border-top: 1px solid #B3B3B3;
 }
 #submitNewWork {
-	margin-top: 32px;
+	margin-top: 12px;
 	margin-bottom: 55px;
 	min-width: 237px;
 }
 #submitNewWork.inactive {
 	background-color: #A7A7A7;
 	border: 1px solid #A7A7A7;
+	cursor: default;
 }

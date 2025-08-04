@@ -145,16 +145,14 @@ function listenLogIn() {
 /**************************************************
  * GESTION DES MODALES
  **************************************************/
-/*
-let activeWrapper = document.getElementById("wrapper-1");
-activeWrapper.classList.add("display");
-*/
 const wrapper1 = document.getElementById("wrapper-1");
 const wrapper2 = document.getElementById("wrapper-2");
 const wrapper1Close = wrapper1.querySelector(".js-modal-close");
 const forward = wrapper1.querySelector(".js-modal-forward");
 const wrapper2Close = wrapper2.querySelector(".js-modal-close");
 const previous = wrapper2.querySelector(".js-modal-previous");
+const importImage = document.getElementById("photoToAdd");
+const submit = document.getElementById("submitNewWork");
 
 /**************************************************
  * initialisation du EventListener pour la modale
@@ -194,6 +192,9 @@ const closeModal = function (event) {
             wrapper2Close.removeEventListener("click", closeModal);
             previous.removeEventListener("click", displayWrapperRemove);
             wrapper2.classList.remove("js-display");
+            emptyPreview();
+            importImage.removeEventListener("change", checkImageFormat);
+            submit.removeEventListener("click", sendNewWork);
         }
     }
 }
@@ -204,6 +205,9 @@ function displayWrapperRemove() {
     wrapper2Close.removeEventListener("click", closeModal);
     previous.removeEventListener("click", displayWrapperRemove);
     wrapper2.classList.remove("js-display");
+    emptyPreview();
+    importImage.removeEventListener("change", checkImageFormat);
+    submit.removeEventListener("click", sendNewWork);
     
     wrapper1Close.addEventListener("click", closeModal);
     forward.addEventListener("click", displayWrapperAdd);
@@ -223,6 +227,9 @@ function displayWrapperAdd() {
     wrapper2Close.addEventListener("click", closeModal);
     previous.addEventListener("click", displayWrapperRemove);
     wrapper2.classList.add("js-display");
+
+    emptyPreview();
+    listenFormAddImg();
 }
 /**************************************************
  * Affichage des travaux dans la modale
@@ -240,15 +247,14 @@ function showModalGallery(works) {
     addListenerToRemove();
 }
 /**************************************************
- * Ajoute les listeners pour chaque image pour la demande de suppression
+ * Listener déclenche la suppression (event par délégation)
  **************************************************/
 function addListenerToRemove() {
-    const worksList = modal.querySelectorAll(".galleryModal figure .trash");
-    for (const removeBtn of worksList) {
-        removeBtn.addEventListener("click", function () {
-            removeWork(parseInt(removeBtn.dataset.id));
-        });
-    }
+    const galleryModal = modal.querySelector(".galleryModal");
+    galleryModal.addEventListener("click", function (event) {
+        const trash = event.target.closest(".trash");
+        if (trash) removeWork(parseInt(trash.dataset.id));
+    });
 }
 /**************************************************
  * Supprime une image de la BDD
@@ -263,9 +269,10 @@ async function removeWork(workId) {
         if (responseAPI.ok) { // élément supprimé
             // pour un affichage en direct sans rafrachir derrière la modale
             document.querySelector(`#portfolio figure[data-id="${workId}"]`).remove();
+            // update de l'affichage de la modale
+            document.querySelector(`.galleryModal figure[data-id="${workId}"]`).remove();
             // on enlève l'élément supprimé aussi de l'objet "works"
             works.splice(works.findIndex((work) => work.id === workId), 1);
-            showModalGallery(works); // update de l'affichage de la modale
 
         } else { // erreur
             /*
@@ -279,6 +286,127 @@ async function removeWork(workId) {
         displayErrorMessage(error.message);
     }
     
+}
+/**************************************************
+ * Ecouteur d'évènement sur le formulaire d'ajout d'image
+ **************************************************/
+function listenFormAddImg() {
+    const form = document.getElementById("edition");
+    
+    initCategoriesList();
+    
+    importImage.addEventListener("change", checkImageFormat);
+    
+    form.addEventListener("input", checkForm);
+
+    submit.addEventListener("click", sendNewWork);
+}
+/**************************************************
+ * Envoi de la nouvelle image à l'API
+ **************************************************/
+async function sendNewWork(e) {
+    e.preventDefault();
+    if (checkForm()) {
+        try {
+            console.log("envoi de la nouvelle image à l'API");
+            const formData = new FormData();
+            const title = document.getElementById("titlePhoto").value;
+            const category = parseInt(document.getElementById("categoriesSelect").value);
+            formData.append("image", importImage.files[0]);
+            formData.append("title", title);
+            formData.append("category", category);
+            console.log(formData);
+            parseInt
+            // requête d'ajout
+            let responseAPI = await fetch(`http://localhost:5678/api/works`, {
+                method: "POST",
+                body: formData,
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}`}
+            });
+            console.log(responseAPI);
+            if (responseAPI.ok) { // élément ajouté
+                console.log("réponse de l'API ok pour l'ajout d'un travail.");
+                // pour un affichage en direct sans rafrachir derrière la modale
+                //document.querySelector(`#portfolio figure[data-id="${workId}"]`).remove();
+                // update de l'affichage de la modale
+                //document.querySelector(`.galleryModal figure[data-id="${workId}"]`).remove();
+                // on enlève l'élément supprimé aussi de l'objet "works"
+                //works.splice(works.findIndex((work) => work.id === workId), 1);
+
+            } else { // erreur
+                addErrorHandle(responseAPI.status);
+            }
+        } catch(error) {
+            displayErrorMessage(error.message);
+        }
+    }
+}
+/**************************************************
+ * Réinitialise la preview si :
+ * - changement d'image non conforme
+ * - modale fermée ou changement de wrapper
+ * - TODO : formulaire vidé après envoi
+ **************************************************/
+function emptyPreview() {
+    importImage.value = null;
+    const preview = document.querySelector(".modal-form_add-image");
+    const previewForm = `<i class="fa-regular fa-image fa-2xl"></i>
+					<div id="importFile" class="btn js-modal-importFile">+ Ajouter photo</div>
+					<span>jpg, png : 4mo max</span>`;
+    preview.innerHTML = previewForm;
+    document.getElementById("submitNewWork").classList.add("inactive");
+}
+/**************************************************
+ * Vérifie le format d'image
+ * - si OK, affiche la preview
+ * - sinon, efface le fichier de la variable
+ **************************************************/
+function checkImageFormat() {
+    const newImage = importImage.files;
+    if (newImage[0].size > 4000000) {
+        emptyPreview();
+        throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
+    }
+    const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!validFileTypes.includes(newImage[0].type)) {
+        emptyPreview();
+        throw new Error("Fichier non valide. Format attendu .JPG ou .PNG");
+    }
+    const preview = document.querySelector(".modal-form_add-image");
+    preview.innerHTML = "";
+    const imagePreview = document.createElement("img");
+    imagePreview.src = window.URL.createObjectURL(newImage[0]);
+    imagePreview.alt = "Preview nouvelle image à importer";
+    imagePreview.classList.add("imagePreview");
+    preview.append(imagePreview);
+}
+/**************************************************
+ * Vérifie si tous les champs du formulaire sont remplis
+ **************************************************/
+function checkForm() {
+    const validImage = importImage.files;
+    const validTitle = document.getElementById("titlePhoto");
+    const validCategory = document.getElementById("categoriesSelect");
+    if (validImage.length > 0 && validTitle.value !== "" && validCategory.value !== "") {
+        document.getElementById("submitNewWork").classList.remove("inactive");
+        return true;
+    } else {
+        document.getElementById("submitNewWork").classList.add("inactive");
+        return false;
+    }
+}
+/**************************************************
+ * Liste les catégorie dans le formulaire d'ajout
+ **************************************************/
+function initCategoriesList() {
+    const categoriesSelect = document.getElementById("categoriesSelect");
+    categoriesSelect.innerHTML = `<option value=""></option>`;
+    for (const categorie of categories) {
+        const option = document.createElement("option");
+        option.value = categorie.id;
+        option.text = categorie.name;
+        categoriesSelect.appendChild(option);
+    }
 }
 /**************************************************
  * Récupère le statut de la requête de suppression
@@ -298,11 +426,29 @@ function removeErrorHandle(statusCode) {
     }
 }
 /**************************************************
+ * Récupère le statut de la requête d'ajout
+ * et gère les messages d'erreur suivant le cas
+ **************************************************/
+function addErrorHandle(statusCode) {
+    switch(statusCode) {
+        case 201:
+            throw new Error("Ressource ajoutée."); // ce cas ne devrait pas se produire
+        case 400:
+            throw new Error("Erreur dans la requête.");
+        case 401:
+            throw new Error("Non autorisé.");
+        case 500:
+        default:
+            throw new Error("Erreur inconnue.");
+    }
+}
+/**************************************************
  * Affiche un message d'erreur si la suppression echoue
  **************************************************/
 function displayErrorMessage(message) {
     const ErrorMessage = document.getElementById("errorMessage");
     ErrorMessage.innerText = message;
+    console.log(message);
 }
 /**************************************************
  * FIN DES FONCTIONS
@@ -333,3 +479,4 @@ if (isAdminConnected()) {
 
 // affichage de la gallery
 showGallery(works);
+
