@@ -59,10 +59,10 @@ function checkPassword(password) {
  * - l'authentification a échouée
  **************************************************/
 function displayErrorMessage(message) {
-    let spanErrorMessage = document.getElementById("errorMessage");
+    let spanErrorMessage = form.querySelector(".loginErrorMessage");
     if (!spanErrorMessage) {
         spanErrorMessage = document.createElement("span");
-        spanErrorMessage.id = "errorMessage";
+        spanErrorMessage.classList.add("loginErrorMessage");
         form.prepend(spanErrorMessage);
     }
     spanErrorMessage.innerText = message;

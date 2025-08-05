@@ -2,7 +2,7 @@
  * Appel à l'API pour récupérer les données
  **************************************************/
 const reponseWorksAPI = await fetch("http://localhost:5678/api/works");
-const works = await reponseWorksAPI.json();
+let works = await reponseWorksAPI.json();
 
 const reponseCategoriesAPI = await fetch("http://localhost:5678/api/categories");
 const categories = await reponseCategoriesAPI.json();
@@ -56,8 +56,6 @@ function addFilterButtons(categories) {
  * @param {Array} works - Liste des travaux à afficher
  **************************************************/
 function showGallery(works) {
-    const gallery = document.querySelector(".gallery");
-    
     // vide la gallerie des éléments présents par défaut dans le HTML
     gallery.innerHTML = "";
 
@@ -151,8 +149,11 @@ const wrapper1Close = wrapper1.querySelector(".js-modal-close");
 const forward = wrapper1.querySelector(".js-modal-forward");
 const wrapper2Close = wrapper2.querySelector(".js-modal-close");
 const previous = wrapper2.querySelector(".js-modal-previous");
+const form = document.getElementById("edition");
 const importImage = document.getElementById("photoToAdd");
 const submit = document.getElementById("submitNewWork");
+const gallery = document.querySelector(".gallery");
+const galleryModal = modal.querySelector(".galleryModal");
 
 /**************************************************
  * initialisation du EventListener pour la modale
@@ -192,8 +193,10 @@ const closeModal = function (event) {
             wrapper2Close.removeEventListener("click", closeModal);
             previous.removeEventListener("click", displayWrapperRemove);
             wrapper2.classList.remove("js-display");
-            emptyPreview();
+            galleryModal.removeEventListener("click", callRemove);
+            emptyForm();
             importImage.removeEventListener("change", checkImageFormat);
+            form.removeEventListener("input", checkForm);
             submit.removeEventListener("click", sendNewWork);
         }
     }
@@ -205,8 +208,9 @@ function displayWrapperRemove() {
     wrapper2Close.removeEventListener("click", closeModal);
     previous.removeEventListener("click", displayWrapperRemove);
     wrapper2.classList.remove("js-display");
-    emptyPreview();
+    emptyForm();
     importImage.removeEventListener("change", checkImageFormat);
+    form.removeEventListener("input", checkForm);
     submit.removeEventListener("click", sendNewWork);
     
     wrapper1Close.addEventListener("click", closeModal);
@@ -214,6 +218,9 @@ function displayWrapperRemove() {
     wrapper1.classList.add("js-display");
     
     showModalGallery(works);
+
+    displayErrorMessage(wrapper1, "");
+    displayConfirmMessage(wrapper1, "");
 }
 /**************************************************
  * Affichage du Wrapper "Ajout  photo"
@@ -223,44 +230,51 @@ function displayWrapperAdd() {
     forward.removeEventListener("click", displayWrapperAdd);
     document.querySelector(".galleryModal").innerHTML = "";
     wrapper1.classList.remove("js-display");
+    galleryModal.removeEventListener("click", callRemove);
+    emptyForm();
+    importImage.removeEventListener("change", checkImageFormat);
+    form.removeEventListener("input", checkForm);
+    submit.removeEventListener("click", sendNewWork);
     
     wrapper2Close.addEventListener("click", closeModal);
     previous.addEventListener("click", displayWrapperRemove);
     wrapper2.classList.add("js-display");
 
-    emptyPreview();
     listenFormAddImg();
+
+    displayErrorMessage(wrapper2, "");
+    displayConfirmMessage(wrapper2, "");
 }
 /**************************************************
  * Affichage des travaux dans la modale
+ * Ajoute le listener pour la suppression
  **************************************************/
 function showModalGallery(works) {
-    const gallery = document.querySelector(".galleryModal");
-    gallery.innerHTML = "";
+    galleryModal.innerHTML = "";
     for (const work of works) {
         const figure = `<figure data-id="${work.id}">
                             <img src="${work.imageUrl}" alt="${work.title}">
                             <span class="trash" data-id="${work.id}"><i class="fa-solid fa-xs fa-trash-can"></i></span>
                         </figure>`
-        gallery.innerHTML += figure;
+        galleryModal.innerHTML += figure;
     }
-    addListenerToRemove();
+    galleryModal.addEventListener("click", callRemove);
 }
 /**************************************************
  * Listener déclenche la suppression (event par délégation)
  **************************************************/
-function addListenerToRemove() {
-    const galleryModal = modal.querySelector(".galleryModal");
-    galleryModal.addEventListener("click", function (event) {
-        const trash = event.target.closest(".trash");
-        if (trash) removeWork(parseInt(trash.dataset.id));
-    });
+function callRemove(event) {
+    const trash = event.target.closest(".trash");
+    if (trash) removeWork(parseInt(trash.dataset.id));
 }
 /**************************************************
  * Supprime une image de la BDD
  **************************************************/
 async function removeWork(workId) {
     try {
+        
+        displayErrorMessage(wrapper1, "");
+        displayConfirmMessage(wrapper1, "");
         // requête de suppression
         let responseAPI = await fetch(`http://localhost:5678/api/works/${workId}`, {
             method: "DELETE",
@@ -273,6 +287,8 @@ async function removeWork(workId) {
             document.querySelector(`.galleryModal figure[data-id="${workId}"]`).remove();
             // on enlève l'élément supprimé aussi de l'objet "works"
             works.splice(works.findIndex((work) => work.id === workId), 1);
+            
+            displayConfirmMessage(wrapper1, "Image supprimée avec succès.");
 
         } else { // erreur
             /*
@@ -283,7 +299,7 @@ async function removeWork(workId) {
         }
 
     } catch(error) {
-        displayErrorMessage(error.message);
+        displayErrorMessage(wrapper1, error.message);
     }
     
 }
@@ -291,61 +307,32 @@ async function removeWork(workId) {
  * Ecouteur d'évènement sur le formulaire d'ajout d'image
  **************************************************/
 function listenFormAddImg() {
-    const form = document.getElementById("edition");
-    
-    initCategoriesList();
-    
-    importImage.addEventListener("change", checkImageFormat);
-    
-    form.addEventListener("input", checkForm);
-
-    submit.addEventListener("click", sendNewWork);
-}
-/**************************************************
- * Envoi de la nouvelle image à l'API
- **************************************************/
-async function sendNewWork(e) {
-    e.preventDefault();
-    if (checkForm()) {
-        try {
-            console.log("envoi de la nouvelle image à l'API");
-            const formData = new FormData();
-            const title = document.getElementById("titlePhoto").value;
-            const category = parseInt(document.getElementById("categoriesSelect").value);
-            formData.append("image", importImage.files[0]);
-            formData.append("title", title);
-            formData.append("category", category);
-            console.log(formData);
-            parseInt
-            // requête d'ajout
-            let responseAPI = await fetch(`http://localhost:5678/api/works`, {
-                method: "POST",
-                body: formData,
-                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}`}
-            });
-            console.log(responseAPI);
-            if (responseAPI.ok) { // élément ajouté
-                console.log("réponse de l'API ok pour l'ajout d'un travail.");
-                // pour un affichage en direct sans rafrachir derrière la modale
-                //document.querySelector(`#portfolio figure[data-id="${workId}"]`).remove();
-                // update de l'affichage de la modale
-                //document.querySelector(`.galleryModal figure[data-id="${workId}"]`).remove();
-                // on enlève l'élément supprimé aussi de l'objet "works"
-                //works.splice(works.findIndex((work) => work.id === workId), 1);
-
-            } else { // erreur
-                addErrorHandle(responseAPI.status);
-            }
-        } catch(error) {
-            displayErrorMessage(error.message);
-        }
+    try {
+        displayErrorMessage(wrapper2, "");
+        displayConfirmMessage(wrapper2, "");
+        initCategoriesList();
+        importImage.addEventListener("change", checkImageFormat);
+        form.addEventListener("input", checkForm);
+        submit.addEventListener("click", sendNewWork);
+    } catch(error) {
+        displayErrorMessage(wrapper2, error.message);
     }
 }
 /**************************************************
- * Réinitialise la preview si :
- * - changement d'image non conforme
- * - modale fermée ou changement de wrapper
- * - TODO : formulaire vidé après envoi
+ * Liste les catégorie dans le formulaire d'ajout
+ **************************************************/
+function initCategoriesList() {
+    const categoriesSelect = document.getElementById("categoriesSelect");
+    categoriesSelect.innerHTML = `<option value=""></option>`;
+    for (const categorie of categories) {
+        const option = document.createElement("option");
+        option.value = categorie.id;
+        option.text = categorie.name;
+        categoriesSelect.appendChild(option);
+    }
+}
+/**************************************************
+ * Réinitialise la preview si changement d'image non conforme
  **************************************************/
 function emptyPreview() {
     importImage.value = null;
@@ -357,28 +344,43 @@ function emptyPreview() {
     document.getElementById("submitNewWork").classList.add("inactive");
 }
 /**************************************************
+ * Vide le formulaire
+ **************************************************/
+function emptyForm() {
+    emptyPreview();
+    document.getElementById("titlePhoto").value = "";
+    document.getElementById("categoriesSelect").value = "";
+    document.getElementById("submitNewWork").classList.add("inactive");
+}
+/**************************************************
  * Vérifie le format d'image
  * - si OK, affiche la preview
  * - sinon, efface le fichier de la variable
  **************************************************/
 function checkImageFormat() {
-    const newImage = importImage.files;
-    if (newImage[0].size > 4000000) {
-        emptyPreview();
-        throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
+    try {
+        displayErrorMessage(wrapper2, "");
+        displayConfirmMessage(wrapper2, "");
+        const newImage = importImage.files;
+        if (newImage[0].size > 4000000) {
+            emptyPreview();
+            throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
+        }
+        const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
+        if (!validFileTypes.includes(newImage[0].type)) {
+            emptyPreview();
+            throw new Error("Fichier non valide. Format attendu .JPG ou .PNG");
+        }
+        const preview = document.querySelector(".modal-form_add-image");
+        preview.innerHTML = "";
+        const imagePreview = document.createElement("img");
+        imagePreview.src = window.URL.createObjectURL(newImage[0]);
+        imagePreview.alt = "Preview nouvelle image à importer";
+        imagePreview.classList.add("imagePreview");
+        preview.append(imagePreview);
+    } catch(error) {
+        displayErrorMessage(wrapper2, error.message);
     }
-    const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
-    if (!validFileTypes.includes(newImage[0].type)) {
-        emptyPreview();
-        throw new Error("Fichier non valide. Format attendu .JPG ou .PNG");
-    }
-    const preview = document.querySelector(".modal-form_add-image");
-    preview.innerHTML = "";
-    const imagePreview = document.createElement("img");
-    imagePreview.src = window.URL.createObjectURL(newImage[0]);
-    imagePreview.alt = "Preview nouvelle image à importer";
-    imagePreview.classList.add("imagePreview");
-    preview.append(imagePreview);
 }
 /**************************************************
  * Vérifie si tous les champs du formulaire sont remplis
@@ -396,16 +398,68 @@ function checkForm() {
     }
 }
 /**************************************************
- * Liste les catégorie dans le formulaire d'ajout
+ * Envoi de la nouvelle image à l'API
  **************************************************/
-function initCategoriesList() {
-    const categoriesSelect = document.getElementById("categoriesSelect");
-    categoriesSelect.innerHTML = `<option value=""></option>`;
-    for (const categorie of categories) {
-        const option = document.createElement("option");
-        option.value = categorie.id;
-        option.text = categorie.name;
-        categoriesSelect.appendChild(option);
+async function sendNewWork(e) {
+    e.preventDefault();
+    try {
+        displayErrorMessage(wrapper2, "");
+        displayConfirmMessage(wrapper2, "");
+        if (checkForm()) {
+            const formData = new FormData();
+            const title = document.getElementById("titlePhoto").value;
+            const category = parseInt(document.getElementById("categoriesSelect").value);
+            formData.append("image", importImage.files[0]);
+            formData.append("title", title);
+            formData.append("category", category);
+            // requête d'ajout
+            let responseAPI = await fetch(`http://localhost:5678/api/works`, {
+                method: "POST",
+                body: formData,
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}`}
+            });
+
+            if (responseAPI.ok) { // élément ajouté
+                const newWork = await responseAPI.json();
+                
+                // pour un affichage en direct sans rafrachir derrière la modale
+                const figure = `<figure data-id="${newWork.id}">
+                                    <img src="${newWork.imageUrl}" alt="${newWork.title}">
+                                    <figcaption>${newWork.title}</figcaption>
+                                </figure>`;
+                gallery.innerHTML += figure;
+                
+                // update de la galerie dans la modale
+                const figureModal = `<figure data-id="${newWork.id}">
+                                        <img src="${newWork.imageUrl}" alt="${newWork.title}">
+                                        <span class="trash" data-id="${newWork.id}"><i class="fa-solid fa-xs fa-trash-can"></i></span>
+                                    </figure>`;
+                galleryModal.innerHTML += figureModal;
+                // on ajoute l'élément aussi dans l'objet "works"
+                const newWorkToAdd = {
+                    "id": parseInt(newWork.id),
+                    "title": newWork.title,
+                    "imageUrl": newWork.imageUrl,
+                    "categoryId": parseInt(newWork.categoryId),
+                    "userId": parseInt(newWork.userId),
+                    "category": {
+                        "id": parseInt(newWork.categoryId),
+                        "name": categories.find(category => category.id === parseInt(newWork.categoryId))?.name
+                    }
+                };
+                works.push(newWorkToAdd);
+                // On vide le formulaire aussi
+                emptyForm();
+                displayConfirmMessage(wrapper2, "Image ajoutée avec succès.");
+
+            } else { // erreur
+                addErrorHandle(responseAPI.status);
+            }
+        } else {
+            throw new Error("Vous devez renseigner tous les champs.");
+        }
+    } catch(error) {
+        displayErrorMessage(wrapper2, error.message);
     }
 }
 /**************************************************
@@ -445,10 +499,26 @@ function addErrorHandle(statusCode) {
 /**************************************************
  * Affiche un message d'erreur si la suppression echoue
  **************************************************/
-function displayErrorMessage(message) {
-    const ErrorMessage = document.getElementById("errorMessage");
-    ErrorMessage.innerText = message;
-    console.log(message);
+function displayErrorMessage(wrapper, message) {
+    let spanErrorMessage = wrapper.querySelector(".errorMessage");
+    if (!spanErrorMessage) {
+        spanErrorMessage = document.createElement("span");
+        spanErrorMessage.classList.add("errorMessage");
+        wrapper.appendChild(spanErrorMessage);
+    }
+    spanErrorMessage.innerText = message;
+}
+/**************************************************
+ * Affiche un message de confirmation lorsque l'opération réussie
+ **************************************************/
+function displayConfirmMessage(wrapper, message) {
+    let spanConfirmationMessage = wrapper.querySelector(".confirmMessage");
+    if (!spanConfirmationMessage) {
+        spanConfirmationMessage = document.createElement("span");
+        spanConfirmationMessage.classList.add("confirmMessage");
+        wrapper.appendChild(spanConfirmationMessage);
+    }
+    spanConfirmationMessage.innerText = message;
 }
 /**************************************************
  * FIN DES FONCTIONS

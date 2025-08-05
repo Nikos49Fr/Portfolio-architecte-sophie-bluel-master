@@ -273,11 +273,36 @@ a:hover {
 }
 
 /* Messages d'erreur */
-#errorMessage {
+.loginErrorMessage {
 	color: red;
 	text-align: center;
 	width: 100%;
-	padding-bottom: 20px;
+}
+.errorMessage {
+	color: red;
+	text-align: center;
+	width: 100%;
+}
+#wrapper-1 .errorMessage {
+	position: absolute;
+    top: 90px;
+}
+#wrapper-2 .errorMessage {
+	position: absolute;
+    top: 110px;
+}
+.confirmMessage {
+	color: green;
+	text-align: center;
+	width: 100%;
+}
+#wrapper-1 .confirmMessage {
+	position: absolute;
+    top: 90px;
+}
+#wrapper-2 .confirmMessage {
+	position: absolute;
+    top: 110px;
 }
 
 /* bannière admin */
@@ -464,7 +489,7 @@ select {
 	border-top: 1px solid #B3B3B3;
 }
 #submitNewWork {
-	margin-top: 12px;
+	margin-top: 32px;
 	margin-bottom: 55px;
 	min-width: 237px;
 }
