@@ -53,16 +53,16 @@ function addFilterButtons(categories) {
  * @param {Array} works - Liste des travaux à afficher
  **************************************************/
 function showGallery(works) {
-    // vide la gallerie des éléments présents par défaut dans le HTML
-    gallery.innerHTML = "";
-
+    const fragment = document.createDocumentFragment();
     for (const work of works) {
-        const figure = `<figure data-id="${work.id}">
-                            <img src="${work.imageUrl}" alt="${work.title}">
-                            <figcaption>${work.title}</figcaption>
-                        </figure>`
-        gallery.innerHTML += figure;
+        const figure = document.createElement("figure");
+        figure.dataset.id = work.id;
+        figure.innerHTML = `<img src="${work.imageUrl}" alt="${work.title}">
+                            <figcaption>${work.title}</figcaption>`
+        fragment.appendChild(figure);
     }
+    gallery.innerHTML = "";
+    gallery.appendChild(fragment);
 }
 /**************************************************
  * Ajoute les EventListeners sur les boutons de filtre,
@@ -96,7 +96,7 @@ function filteredButtonsListener() {
 function isAdminConnected() {
     const userId = window.localStorage.getItem("userId");
     const token = window.localStorage.getItem("token");
-    if (userId && token) return true; 
+    return !!(userId && token);
 }
 /**************************************************
  * Change le menu Login en Logout
@@ -122,8 +122,8 @@ function showAdminFunctions() {
 function listenLogOut() {
     const menuLogin = document.querySelector(".login");
     menuLogin.addEventListener("click", () => {
-        window.localStorage.setItem("userId", []);
-        window.localStorage.setItem("token", []);
+        window.localStorage.removeItem("userId");
+        window.localStorage.removeItem("token");
         window.location.reload();
     });
 }
@@ -183,14 +183,14 @@ const closeModal = function (event) {
         if (wrapper1.classList.contains("js-display")) {
             wrapper1Close.removeEventListener("click", closeModal);
             forward.removeEventListener("click", displayWrapperAdd);
-            document.querySelector(".galleryModal").innerHTML = "";
+            galleryModal.removeEventListener("click", callRemove);
+            galleryModal.innerHTML = "";
             wrapper1.classList.remove("js-display");
         }
         if (wrapper2.classList.contains("js-display")) {
             wrapper2Close.removeEventListener("click", closeModal);
             previous.removeEventListener("click", displayWrapperRemove);
             wrapper2.classList.remove("js-display");
-            galleryModal.removeEventListener("click", callRemove);
             emptyForm();
             importImage.removeEventListener("change", checkImageFormat);
             form.removeEventListener("input", checkForm);
@@ -226,7 +226,6 @@ function displayWrapperAdd() {
     forward.removeEventListener("click", displayWrapperAdd);
     document.querySelector(".galleryModal").innerHTML = "";
     wrapper1.classList.remove("js-display");
-    galleryModal.removeEventListener("click", callRemove);
     emptyForm();
     importImage.removeEventListener("change", checkImageFormat);
     form.removeEventListener("input", checkForm);
@@ -245,14 +244,18 @@ function displayWrapperAdd() {
  * Ajoute le listener pour la suppression
  **************************************************/
 function showModalGallery(works) {
-    galleryModal.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     for (const work of works) {
-        const figure = `<figure data-id="${work.id}">
-                            <img src="${work.imageUrl}" alt="${work.title}">
-                            <span class="trash" data-id="${work.id}"><i class="fa-solid fa-xs fa-trash-can"></i></span>
-                        </figure>`
-        galleryModal.innerHTML += figure;
+        const figure = document.createElement("figure");
+        figure.dataset.id = work.id;
+        figure.innerHTML = `<img src="${work.imageUrl}" alt="${work.title}">
+                            <span class="trash" data-id="${work.id}"><i class="fa-solid fa-xs fa-trash-can"></i></span>`
+        fragment.appendChild(figure);
     }
+    galleryModal.innerHTML = "";
+    galleryModal.appendChild(fragment);
+
+    galleryModal.removeEventListener("click", callRemove);
     galleryModal.addEventListener("click", callRemove);
 }
 /**************************************************
@@ -262,7 +265,7 @@ function callRemove(event) {
     const trash = event.target.closest(".trash");
     if (trash) {
         if (window.confirm("Voulez-vous vraiment supprimer cette image ?")) {
-            removeWork(parseInt(trash.dataset.id));
+            removeWork(Number(trash.dataset.id));
         }
     }
 }
@@ -381,16 +384,15 @@ function checkImageFormat() {
  **************************************************/
 function checkForm() {
     displayErrorMessage(wrapper2, "");
-    const validImage = importImage.files;
-    const validTitle = document.getElementById("titlePhoto");
-    const validCategory = document.getElementById("categoriesSelect");
-    if (validImage.length > 0 && validTitle.value !== "" && validCategory.value !== "") {
-        document.getElementById("submitNewWork").classList.remove("inactive");
+    const image = importImage.files.length > 0;
+    const title = document.getElementById("titlePhoto").value.trim() !== "";
+    const category = document.getElementById("categoriesSelect").value !== "";
+    if (image && title && category) {
+        submit.classList.remove("inactive");
         return true;
-    } else {
-        document.getElementById("submitNewWork").classList.add("inactive");
-        return false;
     }
+    submit.classList.add("inactive");
+    return false;
 }
 /**************************************************
  * Envoi de la nouvelle image à l'API
@@ -402,7 +404,7 @@ async function sendNewWork(e) {
         if (checkForm()) {
             const formData = new FormData();
             const title = document.getElementById("titlePhoto").value;
-            const category = parseInt(document.getElementById("categoriesSelect").value);
+            const category = Number(document.getElementById("categoriesSelect").value);
             formData.append("image", importImage.files[0]);
             formData.append("title", title);
             formData.append("category", category);
@@ -431,14 +433,14 @@ async function sendNewWork(e) {
                 galleryModal.innerHTML += figureModal;
                 // on ajoute l'élément aussi dans l'objet "works"
                 const newWorkToAdd = {
-                    "id": parseInt(newWork.id),
+                    "id": Number(newWork.id),
                     "title": newWork.title,
                     "imageUrl": newWork.imageUrl,
-                    "categoryId": parseInt(newWork.categoryId),
-                    "userId": parseInt(newWork.userId),
+                    "categoryId": Number(newWork.categoryId),
+                    "userId": Number(newWork.userId),
                     "category": {
-                        "id": parseInt(newWork.categoryId),
-                        "name": categories.find(category => category.id === parseInt(newWork.categoryId))?.name
+                        "id": Number(newWork.categoryId),
+                        "name": categories.find(category => category.id === Number(newWork.categoryId))?.name
                     }
                 };
                 works.push(newWorkToAdd);
