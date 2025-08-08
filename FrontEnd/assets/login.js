@@ -9,9 +9,8 @@ form.addEventListener("submit", async (event) => {
         displayErrorMessage(""); // pour effacer le message d'erreur
 
         const email = document.getElementById("email").value;
-        checkEmail(email);
         const password = document.getElementById("password").value;
-        checkPassword(password)
+        checkEmailPassword(email, password);
 
         // Demande d'authentification
         const authentification = await requestAuth(email, password);
@@ -42,15 +41,12 @@ form.addEventListener("submit", async (event) => {
 /**************************************************
  * Vérifie le format d'email saisi et que le mot de passe ne soit pas vide
  **************************************************/
-function checkEmail(email) {
+function checkEmailPassword(email, password) {
+    if (email === "") throw new Error("Veuillez saisir un email.");
+    if (password === "") throw new Error("Veuillez saisir le mot de passe.");
     let regex = new RegExp("[a-z0-9._-]+@[a-z0-9._-]+\.[a-z0-9._-]+");
     if (!regex.test(email)) {
-        throw new Error("Veuillez saisir un email.");
-    }
-}
-function checkPassword(password) {
-    if (password === "") {
-        throw new Error("Veuillez saisir le mot de passe.");
+        throw new Error("Veuillez saisir un email valide.");
     }
 }
 /**************************************************
@@ -91,11 +87,8 @@ function AuthErrorHandle(statusCode) {
         case 200:
             throw new Error("Connexion réussie."); // ce cas ne devrait pas se produire car testé en amont
         case 401:
-            throw new Error("Mot de passe incorrect.");
         case 404:
-            throw new Error("Email inconnu.");
-        default:
-            throw new Error("Erreur d'authentification inconnue."); // erreur inconnue
+            throw new Error("Email ou mot de passe incorrect.");
     }
 }
 /**************************************************
