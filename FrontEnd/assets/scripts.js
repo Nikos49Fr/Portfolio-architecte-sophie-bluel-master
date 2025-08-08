@@ -1,11 +1,8 @@
-/**************************************************
- * Appel à l'API pour récupérer les données
- **************************************************/
-const reponseWorksAPI = await fetch("http://localhost:5678/api/works");
-let works = await reponseWorksAPI.json();
 
-const reponseCategoriesAPI = await fetch("http://localhost:5678/api/categories");
-const categories = await reponseCategoriesAPI.json();
+let works = [];
+let categories = [];
+
+init();
 
 /**************************************************
  * FONCTIONS
@@ -20,13 +17,13 @@ const categories = await reponseCategoriesAPI.json();
  **************************************************/
 function listingCategories(works) {
 
-    const caterogiesList = new Set();
-    caterogiesList.add("Tous");
+    const categoriesList = new Set();
+    categoriesList.add("Tous");
 
     for (const work of works) {
-        caterogiesList.add(work.category.name);
+        categoriesList.add(work.category.name);
     }
-    return caterogiesList;
+    return categoriesList;
 }
 /**************************************************
  * Ajoute dynamiquement les boutons de filtres à la galerie,
@@ -499,31 +496,26 @@ function displayErrorMessage(wrapper, message) {
     spanErrorMessage.innerText = message;
 }
 /**************************************************
- * FIN DES FONCTIONS
+ * Initialisation
+ * - Appel à l'API pour récupérer les données
+ * - Lancement des fonctions principales
  **************************************************/
+async function init() {
+    const reponseWorksAPI = await fetch("http://localhost:5678/api/works");
+    works = await reponseWorksAPI.json();
 
+    const reponseCategoriesAPI = await fetch("http://localhost:5678/api/categories");
+    categories = await reponseCategoriesAPI.json();
 
-/**************************************************
- * Début du Script
- **************************************************/
+    showGallery(works);
 
-// si l'admin est connecté
-if (isAdminConnected()) {
-    // gère l'affichage si l'admin est connecté
-    showAdminFunctions();
-    // écoute les demandes de déconnexion
-    listenLogOut();
-    // écoute l'appel à la modale de modification 
-    initModalListener();
-} else {
-    // génération des boutons de filtres dynamiquement
-    addFilterButtons(listingCategories(works));
-    // ajout des Listeners sur les boutons filtres
-    filteredButtonsListener();
-    // écoute les demandes de connexion
-    listenLogIn();
+    if (isAdminConnected()) {
+        showAdminFunctions();
+        listenLogOut();
+        initModalListener();
+    } else {
+        addFilterButtons(listingCategories(works));
+        filteredButtonsListener();
+        listenLogIn();
+    }
 }
-
-// affichage de la gallery
-showGallery(works);
-
