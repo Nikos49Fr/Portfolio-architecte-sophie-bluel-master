@@ -291,19 +291,6 @@ a:hover {
 	position: absolute;
     top: 110px;
 }
-.confirmMessage {
-	color: green;
-	text-align: center;
-	width: 100%;
-}
-#wrapper-1 .confirmMessage {
-	position: absolute;
-    top: 90px;
-}
-#wrapper-2 .confirmMessage {
-	position: absolute;
-    top: 110px;
-}
 
 /* bannière admin */
 #admin-banniere {

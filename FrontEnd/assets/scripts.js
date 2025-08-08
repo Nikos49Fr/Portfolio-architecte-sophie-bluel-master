@@ -105,9 +105,9 @@ function isAdminConnected() {
  * Change le menu Login en Logout
  * et affiche le bouton "modifier" pour la gallerie
  **************************************************/
-function ShowAdminFunctions() {
+function showAdminFunctions() {
     const menuLogin = document.querySelector(".login");
-    menuLogin.innerText = "Logout";
+    menuLogin.innerText = "logout";
     // ajoute le bouton admin "modifier"
     const element = document.querySelector("#portfolio h2");
     const spanModifyBtn = `<button class="js-modal">
@@ -143,6 +143,7 @@ function listenLogIn() {
 /**************************************************
  * GESTION DES MODALES
  **************************************************/
+const modal = document.getElementById("modal");
 const wrapper1 = document.getElementById("wrapper-1");
 const wrapper2 = document.getElementById("wrapper-2");
 const wrapper1Close = wrapper1.querySelector(".js-modal-close");
@@ -166,7 +167,6 @@ function initModalListener() {
  **************************************************/
 const openModal = function (event) {
     event.preventDefault();
-    const modal = document.getElementById("modal");
     modal.classList.add("js-display");
     modal.removeAttribute("aria-hidden");
     modal.setAttribute("aria-modal", "true");
@@ -220,7 +220,6 @@ function displayWrapperRemove() {
     showModalGallery(works);
 
     displayErrorMessage(wrapper1, "");
-    displayConfirmMessage(wrapper1, "");
 }
 /**************************************************
  * Affichage du Wrapper "Ajout  photo"
@@ -243,7 +242,6 @@ function displayWrapperAdd() {
     listenFormAddImg();
 
     displayErrorMessage(wrapper2, "");
-    displayConfirmMessage(wrapper2, "");
 }
 /**************************************************
  * Affichage des travaux dans la modale
@@ -265,7 +263,11 @@ function showModalGallery(works) {
  **************************************************/
 function callRemove(event) {
     const trash = event.target.closest(".trash");
-    if (trash) removeWork(parseInt(trash.dataset.id));
+    if (trash) {
+        if (window.confirm("Voulez-vous vraiment supprimer cette image ?")) {
+            removeWork(parseInt(trash.dataset.id));
+        }
+    }
 }
 /**************************************************
  * Supprime une image de la BDD
@@ -274,7 +276,6 @@ async function removeWork(workId) {
     try {
         
         displayErrorMessage(wrapper1, "");
-        displayConfirmMessage(wrapper1, "");
         // requête de suppression
         let responseAPI = await fetch(`http://localhost:5678/api/works/${workId}`, {
             method: "DELETE",
@@ -288,8 +289,6 @@ async function removeWork(workId) {
             // on enlève l'élément supprimé aussi de l'objet "works"
             works.splice(works.findIndex((work) => work.id === workId), 1);
             
-            displayConfirmMessage(wrapper1, "Image supprimée avec succès.");
-
         } else { // erreur
             /*
             Actuellement, l'API renvois toujours ok, et le status 204, même si l'élément à supprimer n'existe pas.
@@ -309,7 +308,6 @@ async function removeWork(workId) {
 function listenFormAddImg() {
     try {
         displayErrorMessage(wrapper2, "");
-        displayConfirmMessage(wrapper2, "");
         initCategoriesList();
         importImage.addEventListener("change", checkImageFormat);
         form.addEventListener("input", checkForm);
@@ -334,7 +332,7 @@ function initCategoriesList() {
 /**************************************************
  * Réinitialise la preview si changement d'image non conforme
  **************************************************/
-function emptyPreview() {
+function emptyImagePreview() {
     importImage.value = null;
     const preview = document.querySelector(".modal-form_add-image");
     const previewForm = `<i class="fa-regular fa-image fa-2xl"></i>
@@ -347,7 +345,7 @@ function emptyPreview() {
  * Vide le formulaire
  **************************************************/
 function emptyForm() {
-    emptyPreview();
+    emptyImagePreview();
     document.getElementById("titlePhoto").value = "";
     document.getElementById("categoriesSelect").value = "";
     document.getElementById("submitNewWork").classList.add("inactive");
@@ -360,15 +358,14 @@ function emptyForm() {
 function checkImageFormat() {
     try {
         displayErrorMessage(wrapper2, "");
-        displayConfirmMessage(wrapper2, "");
         const newImage = importImage.files;
         if (newImage[0].size > 4000000) {
-            emptyPreview();
+            emptyImagePreview();
             throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
         }
         const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
         if (!validFileTypes.includes(newImage[0].type)) {
-            emptyPreview();
+            emptyImagePreview();
             throw new Error("Fichier non valide. Format attendu .JPG ou .PNG");
         }
         const preview = document.querySelector(".modal-form_add-image");
@@ -386,6 +383,7 @@ function checkImageFormat() {
  * Vérifie si tous les champs du formulaire sont remplis
  **************************************************/
 function checkForm() {
+    displayErrorMessage(wrapper2, "");
     const validImage = importImage.files;
     const validTitle = document.getElementById("titlePhoto");
     const validCategory = document.getElementById("categoriesSelect");
@@ -404,7 +402,6 @@ async function sendNewWork(e) {
     e.preventDefault();
     try {
         displayErrorMessage(wrapper2, "");
-        displayConfirmMessage(wrapper2, "");
         if (checkForm()) {
             const formData = new FormData();
             const title = document.getElementById("titlePhoto").value;
@@ -450,7 +447,6 @@ async function sendNewWork(e) {
                 works.push(newWorkToAdd);
                 // On vide le formulaire aussi
                 emptyForm();
-                displayConfirmMessage(wrapper2, "Image ajoutée avec succès.");
 
             } else { // erreur
                 addErrorHandle(responseAPI.status);
@@ -468,14 +464,11 @@ async function sendNewWork(e) {
  **************************************************/
 function removeErrorHandle(statusCode) {
     switch(statusCode) {
-        case 204:
-            throw new Error("Ressource supprimée."); // ce cas ne devrait pas se produire
         case 401:
             throw new Error("Vous n'êtes pas autorisé à supprimer cette ressource.");
         case 404:
             throw new Error("La ressource n'existe pas.");
         case 500:
-        default:
             throw new Error("Erreur inconnue.");
     }
 }
@@ -485,14 +478,11 @@ function removeErrorHandle(statusCode) {
  **************************************************/
 function addErrorHandle(statusCode) {
     switch(statusCode) {
-        case 201:
-            throw new Error("Ressource ajoutée."); // ce cas ne devrait pas se produire
         case 400:
             throw new Error("Erreur dans la requête.");
         case 401:
             throw new Error("Non autorisé.");
         case 500:
-        default:
             throw new Error("Erreur inconnue.");
     }
 }
@@ -509,18 +499,6 @@ function displayErrorMessage(wrapper, message) {
     spanErrorMessage.innerText = message;
 }
 /**************************************************
- * Affiche un message de confirmation lorsque l'opération réussie
- **************************************************/
-function displayConfirmMessage(wrapper, message) {
-    let spanConfirmationMessage = wrapper.querySelector(".confirmMessage");
-    if (!spanConfirmationMessage) {
-        spanConfirmationMessage = document.createElement("span");
-        spanConfirmationMessage.classList.add("confirmMessage");
-        wrapper.appendChild(spanConfirmationMessage);
-    }
-    spanConfirmationMessage.innerText = message;
-}
-/**************************************************
  * FIN DES FONCTIONS
  **************************************************/
 
@@ -529,11 +507,10 @@ function displayConfirmMessage(wrapper, message) {
  * Début du Script
  **************************************************/
 
-
 // si l'admin est connecté
 if (isAdminConnected()) {
     // gère l'affichage si l'admin est connecté
-    ShowAdminFunctions();
+    showAdminFunctions();
     // écoute les demandes de déconnexion
     listenLogOut();
     // écoute l'appel à la modale de modification 
