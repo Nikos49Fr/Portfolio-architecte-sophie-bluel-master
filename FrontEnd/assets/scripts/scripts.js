@@ -1,4 +1,5 @@
 
+const urlAPI = "http://localhost:5678/api/";
 let works = [];
 let categories = [];
 
@@ -503,10 +504,10 @@ function displayErrorMessage(wrapper, message) {
  * - Lancement des fonctions principales
  **************************************************/
 async function init() {
-    const reponseWorksAPI = await fetch("http://localhost:5678/api/works");
+    const reponseWorksAPI = await fetch(`${urlAPI}works`);
     works = await reponseWorksAPI.json();
 
-    const reponseCategoriesAPI = await fetch("http://localhost:5678/api/categories");
+    const reponseCategoriesAPI = await fetch(`${urlAPI}categories`);
     categories = await reponseCategoriesAPI.json();
 
     showGallery(works);

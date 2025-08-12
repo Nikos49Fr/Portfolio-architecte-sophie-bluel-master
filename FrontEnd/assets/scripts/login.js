@@ -25,7 +25,7 @@ form.addEventListener("submit", async (event) => {
 
         } else { // authentification KO
             
-            AuthErrorHandle(authentification.status);
+            authErrorHandle(authentification.status);
         }
 
     } catch(error) {
@@ -82,7 +82,7 @@ async function requestAuth(email, password) {
  * Récupère le statut de la requête d'authentification
  * et gère les messages d'erreur suivant le cas
  **************************************************/
-function AuthErrorHandle(statusCode) {
+function authErrorHandle(statusCode) {
     switch(statusCode) {
         case 200:
             throw new Error("Connexion réussie."); // ce cas ne devrait pas se produire car testé en amont
