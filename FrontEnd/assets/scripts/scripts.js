@@ -360,7 +360,7 @@ function checkImageFormat() {
     try {
         displayErrorMessage(wrapper2, "");
         const newImage = importImage.files;
-        if (newImage.length > 0) {
+        if (newImage.length > 0) { // gestion du clic sur "annuler" quand on veut ajouter une image mais qu'on annule
             if (newImage[0].size > 4000000) {
                 emptyImagePreview();
                 throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
@@ -377,6 +377,8 @@ function checkImageFormat() {
             imagePreview.alt = "Preview nouvelle image à importer";
             imagePreview.classList.add("imagePreview");
             preview.append(imagePreview);
+        } else {
+            emptyImagePreview();
         }
     } catch(error) {
         displayErrorMessage(wrapper2, error.message);
