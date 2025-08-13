@@ -360,22 +360,24 @@ function checkImageFormat() {
     try {
         displayErrorMessage(wrapper2, "");
         const newImage = importImage.files;
-        if (newImage[0].size > 4000000) {
-            emptyImagePreview();
-            throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
+        if (newImage.length > 0) {
+            if (newImage[0].size > 4000000) {
+                emptyImagePreview();
+                throw new Error("Image non valide. La taille doit être de 4Mo maximum."); 
+            }
+            const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
+            if (!validFileTypes.includes(newImage[0].type)) {
+                emptyImagePreview();
+                throw new Error("Fichier non valide. Format attendu .JPG ou .PNG");
+            }
+            const preview = document.querySelector(".modal-form_add-image");
+            preview.innerHTML = "";
+            const imagePreview = document.createElement("img");
+            imagePreview.src = window.URL.createObjectURL(newImage[0]);
+            imagePreview.alt = "Preview nouvelle image à importer";
+            imagePreview.classList.add("imagePreview");
+            preview.append(imagePreview);
         }
-        const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
-        if (!validFileTypes.includes(newImage[0].type)) {
-            emptyImagePreview();
-            throw new Error("Fichier non valide. Format attendu .JPG ou .PNG");
-        }
-        const preview = document.querySelector(".modal-form_add-image");
-        preview.innerHTML = "";
-        const imagePreview = document.createElement("img");
-        imagePreview.src = window.URL.createObjectURL(newImage[0]);
-        imagePreview.alt = "Preview nouvelle image à importer";
-        imagePreview.classList.add("imagePreview");
-        preview.append(imagePreview);
     } catch(error) {
         displayErrorMessage(wrapper2, error.message);
     }
